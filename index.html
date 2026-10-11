@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>余弦定理の発見</title>
+
+<style>
+body{
+    font-family:sans-serif;
+    text-align:center;
+    margin:20px;
+    background:#f8f9fa;
+}
+
+h1{
+    color:#204060;
+}
+
+canvas{
+    border:1px solid #ccc;
+    background:white;
+    max-width:100%;
+}
+
+.panel{
+    margin:15px;
+    padding:10px;
+    background:white;
+    border-radius:10px;
+}
+
+button{
+    font-size:16px;
+    padding:8px 16px;
+    margin:5px;
+}
+
+.info{
+    font-size:20px;
+    margin:10px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>単位円から余弦定理を発見しよう</h1>
+
+<div class="panel">
+角度 θ :
+<input type="range" id="angle" min="0" max="180" value="60">
+<span id="deg">60</span>°
+</div>
+
+<div class="panel">
+<button onclick="nextStep()">次のSTEP</button>
+<h2 id="stepTitle">STEP1　単位円上の2点を見る</h2>
+</div>
+
+<canvas id="canvas" width="600" height="450"></canvas>
+
+<div class="panel info" id="output"></div>
+
+<script>
+
+let step = 1;
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+const slider = document.getElementById("angle");
+
+function nextStep(){
+    if(step<5){
+        step++;
+    }
+    draw();
+}
+
+function draw(){
+
+    const deg = Number(slider.value);
+    document.getElementById("deg").textContent = deg;
+
+    const t = deg*Math.PI/180;
+
+    const cx = 300;
+    const cy = 220;
+    const R = 150;
+
+    const Ax = cx + R;
+    const Ay = cy;
+
+    const Bx = cx + R*Math.cos(t);
+    const By = cy - R*Math.sin(t);
+
+    ctx.clearRect(0,0,600,450);
+
+    ctx.beginPath();
+    ctx.arc(cx,cy,R,0,2*Math.PI);
+    ctx.strokeStyle="#000";
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.lineTo(Ax,Ay);
+    ctx.strokeStyle="blue";
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.lineTo(Bx,By);
+    ctx.strokeStyle="blue";
+    ctx.stroke();
+
+    if(step>=2){
+        ctx.beginPath();
+        ctx.moveTo(Ax,Ay);
+        ctx.lineTo(Bx,By);
+        ctx.strokeStyle="red";
+        ctx.lineWidth=3;
+        ctx.stroke();
+        ctx.lineWidth=1;
+    }
+
+    [["O",cx,cy],["A",Ax,Ay],["B",Bx,By]].forEach(p=>{
+        ctx.beginPath();
+        ctx.arc(p[1],p[2],5,0,2*Math.PI);
+        ctx.fill();
+        ctx.fillText(p[0],p[1]+8,p[2]-8);
+    });
+
+    const AB = Math.sqrt(
+        (Math.cos(t)-1)**2 +
+        Math.sin(t)**2
+    );
+
+    const AB2 = AB*AB;
+
+    const rhs = 2 - 2*Math.cos(t);
+
+    let text = "";
+    let title = "";
+
+    if(step===1){
+        title = "STEP1　単位円上の2点を見る";
+        text = "角度を動かして観察しよう。";
+    }
+
+    if(step===2){
+        title = "STEP2　弦ABを見る";
+        text = `AB = ${AB.toFixed(4)}`;
+    }
+
+    if(step===3){
+        title = "STEP3　AB²を調べる";
+        text = `AB² = ${AB2.toFixed(4)}`;
+    }
+
+    if(step===4){
+        title = "STEP4　2−2cosθ と比較する";
+        text = `
+AB² = ${AB2.toFixed(4)}
+<br><br>
+2−2cosθ = ${rhs.toFixed(4)}
+`;
+    }
+
+    if(step===5){
+        title = "STEP5　余弦定理を予想する";
+        text = `
+AB² = ${AB2.toFixed(4)}
+<br><br>
+2−2cosθ = ${rhs.toFixed(4)}
+<br><br>
+AB² = 2 − 2cosθ
+<br><br>
+半径1,1を一般の長さ a,b に変えたら？
+<br><br>
+c² = a² + b² − 2abcosC
+`;
+    }
+
+    document.getElementById("stepTitle").innerHTML = title;
+    document.getElementById("output").innerHTML = text;
+}
+
+slider.addEventListener("input",draw);
+
+draw();
+
+</script>
+
+</body>
+</html>
